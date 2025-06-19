@@ -40,7 +40,7 @@ MediRemind est une application mobile Flutter permettant aux utilisateurs de pro
 ### 📥 Clonage du projet
 
 ```bash
-git clone https://github.com/votre-utilisateur/mediremind.git
+git clone https://github.com/kuinat/mediremind.git
 cd mediremind
 Remplace votre-utilisateur par ton identifiant GitHub.
 
