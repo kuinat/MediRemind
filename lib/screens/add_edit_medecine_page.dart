@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/medecine.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
@@ -28,7 +29,6 @@ class _AddEditPageState extends State<AddEditPage> {
   }
 
   void _save() async {
-    await NotificationService().showTestNotification();
     if (_nameCtrl.text.isEmpty || _dosageCtrl.text.isEmpty || _time == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Veuillez remplir tous les champs.")),
@@ -53,13 +53,20 @@ class _AddEditPageState extends State<AddEditPage> {
     }
 
     // ✅ Planification de la notification quotidienne
-    await NotificationService().scheduleDailyNotification(
-      id: med.id!,
-      title: 'Rappel Médicament',
-      body: 'Prends ton médicament : ${med.name}',
-      hour: med.hour,
-      minute: med.minute,
-    );
+    try {
+      await NotificationService().scheduleDailyNotification(
+        id: med.id!,
+        title: 'Rappel Médicament',
+        body: 'Prends ton médicament : ${med.name}',
+        hour: med.hour,
+        minute: med.minute,
+      );
+    } on PlatformException catch (e) {
+      if (e.code == 'exact_alarms_not_permitted') {
+        await requestExactAlarmPermission();
+        // puis re-essaye après que l'utilisateur ait autorisé
+      }
+    }
 
     if (mounted) Navigator.pop(context);
   }

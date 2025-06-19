@@ -7,9 +7,7 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
-    await requestExactAlarmPermission();
     tz_data.initializeTimeZones();
-
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const settings = InitializationSettings(android: android);
@@ -29,6 +27,7 @@ class NotificationService {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
+    // Si l'heure est déjà passée aujourd'hui → reporte à demain
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
@@ -42,47 +41,31 @@ class NotificationService {
         android: AndroidNotificationDetails(
           'meds',
           'Médicaments',
-          channelDescription: 'Rappels quotidiens pour la prise de médicaments',
+          channelDescription: 'Rappels pour médicaments',
           importance: Importance.max,
           priority: Priority.high,
         ),
       ),
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
+      matchDateTimeComponents: DateTimeComponents.time, // Répète chaque jour
     );
   }
 
 
   Future<void> showTestNotification() async {
-    await requestNotificationPermission();
-    await FlutterLocalNotificationsPlugin().show(
-      1,
-      'Test',
-      'Icône de notif fonctionnelle',
+
+    await _notifications.show(
+      0,
+      'Test immédiat',
+      'Notification manuelle',
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'test_channel',
-          'Test',
-          channelDescription: 'Test de notif',
-          //icon: 'ic_stat_med', // icône blanche
+          'meds', 'Médicaments',
           importance: Importance.max,
           priority: Priority.high,
         ),
       ),
     );
-
-    // await _notifications.show(
-    //   0,
-    //   'Test immédiat',
-    //   'Notification manuelle',
-    //   const NotificationDetails(
-    //     android: AndroidNotificationDetails(
-    //       'meds', 'Médicaments',
-    //       importance: Importance.max,
-    //       priority: Priority.high,
-    //     ),
-    //   ),
-    // );
   }
 }
